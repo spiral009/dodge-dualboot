@@ -4,6 +4,11 @@ Run a full custom AOSP ROM (**AviumUI**) on slot **`_a`** as your daily driver *
 
 > This is a working setup on a OnePlus 13 **CPH2649 (dodge, SM8750)**. It documents a real build, including the traps that cost days. Adapt, don't blindly copy — flashing the wrong thing bricks slots.
 
+> 📖 **Full step-by-step manual (build / drop / restore ColorOS, with every command + warning): [`docs/GUIDE.md`](docs/GUIDE.md).** Written to be picked up cold by a future operator or an AI assistant. Start there if you want the boring complete version.
+
+### Prior art (what's new here)
+A/B-slot dual-boot is a known *concept* ([XDA](https://xdaforums.com/t/concept-using-a-b-slots-for-dual-rom-boot.3853200/)); the perennial blocker is the **shared `/data`** (Zackptg5's OnePlus 7 method split userdata via a custom TWRP). [DualBootPatcher](https://github.com/chenxiaolong/DualBootPatcher) (dead since Android 9) and MultiROM installed a 2nd ROM into an image; Google's [DSU](https://developer.android.com/topic/dsu) runs a *temporary* GSI from a userdata image. This project combines those ideas into something not previously documented end-to-end: **persistent stock ColorOS in the spare `_b` slot, with its `/data` + bulk in a loopback so `super` stays tiny, on-device updates, and a fix for the shared-TEE lock collision.**
+
 ---
 
 ## Why this is different from "just A/B two ROMs"
