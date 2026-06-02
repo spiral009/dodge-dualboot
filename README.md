@@ -59,6 +59,10 @@ Gotchas that cost time:
 
 ---
 
+### Make it reproducible: `dualbootkit/`
+
+So *anyone* who runs one custom ROM on `_a` can fill the empty `_b` half of `super` with a secondary OS, see **[`dualbootkit/`](dualbootkit/)** — a config-driven, **dry-run-by-default** installer: it `lpdump`-detects your layout, carves the secondary OS's logical partitions into the free `_b` group via `lptools` (no whole-super rewrite), builds the `<os>_data.img` loopback, extracts the bulky `my_stock` into it (label-preserving), and drops the headless WiFi/bind scripts. You bring your own stock images (a PC extractor is included); a tested `dodge-coloros` profile and a blank `TEMPLATE.conf` are provided.
+
 ## Part 2 — Updating AviumUI `_a` with NO laptop / NO fastboot — and without touching ColorOS
 
 **The trap:** a normal full-ROM zip flashes boot to *both* slots and writes the *whole* `super` (`simg2img super.img → /dev/block/by-name/super`). For a *clean install* that's fine; for an *update* it **destroys ColorOS `_b`**.
