@@ -11,6 +11,21 @@ A single-ROM A/B device reserves a whole `_b` partition group in `super` that ju
 4. Create `<os>_data.img` (loopback f2fs) = the secondary OS's **entire `/data`**; extract its bulky preinstalled partition (`my_stock`) **into** that image, label-preserving.
 5. Install **headless** `post-fs-data.d` scripts (my_stock bind, WiFi fix) — invisible in the root manager.
 
+## The one-shot: `cos2b.sh` (recommended)
+
+`cos2b.sh` is the ro2rw-style single-file installer — it does **everything** in one safe pass from recovery:
+- **secondary-slot-only** — auto-detects your daily slot and *refuses* to touch it (target must `!=` active);
+- **ARB-gated** — reads the firmware ARB index stamped by `get-coloros.sh` and aborts if it would raise the fuse (brick);
+- **dry-run by default** — prints the full plan and changes nothing until `--commit`, then asks you to type the target slot to confirm.
+
+```sh
+sh /sdcard/dualbootkit/cos2b.sh                 # built-in dodge defaults, DRY-RUN (review the plan)
+sh /sdcard/dualbootkit/cos2b.sh --commit        # do it (type the slot to confirm)
+sh /sdcard/dualbootkit/cos2b.sh myprofile.conf --commit --yes   # other device / unattended
+```
+
+Everything below is the lower-level / manual path if you want it.
+
 ## Use it
 On a PC (bring your own stock OTA — nothing proprietary ships here):
 ```bash

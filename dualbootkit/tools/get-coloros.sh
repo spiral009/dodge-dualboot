@@ -39,6 +39,7 @@ if [ -n "$XBL" ] && command -v python3 >/dev/null; then
     exit 1
   fi
   echo "   OK: ARB-safe (<= device fuse)."
+  [ -n "${ARB:-}" ] && { echo "$ARB" > "$OUT/firmware/.arb_index"; echo "   stamped firmware/.arb_index=$ARB (cos2b.sh reads this offline in recovery)"; }
 else
   echo "!! could not auto-verify ARB (no xbl/python). Verify manually with arbscan.py before flashing."
 fi
