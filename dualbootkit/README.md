@@ -26,6 +26,20 @@ sh /sdcard/dualbootkit/dualbootkit.sh /sdcard/dualbootkit/profiles/dodge-coloros
 # 3) Reboot → System → Slot B.
 ```
 
+## Getting ColorOS — legally + ARB-safe (no proprietary blobs hosted here)
+
+We do **not** ship ColorOS images (OPPO copyright). Instead, pull the **official** OTA and let the tool gate it:
+
+```bash
+# you supply an official ColorOS OTA (URL / OTA.zip / payload.bin / .ozip from OPPO servers):
+dualbootkit/tools/get-coloros.sh  <ota>  ./coloros_out  --device-arb 0
+```
+- It extracts into `firmware/` + `super/`, then runs **`tools/arbscan.py`** on the `xbl`/`xbl_config` to read the firmware's **anti-rollback (ARB) index** and **REFUSES** any build whose ARB is higher than your device's current fuse (`--device-arb`, default 0). Flashing higher-ARB firmware permanently raises the fuse and can brick downgrades.
+- **dodge baseline:** `<= 16.0.2.403` = **ARB 0** (safe); ARB advances at **16.0.3.50x** — the gate blocks those.
+- Read your phone's *current* fuse yourself: dump `xbl_config_a` and run `arbscan.py` on it; pass that as `--device-arb`.
+
+> Credit: ARB-index parsing technique from [syedinsaf/arbscan](https://github.com/syedinsaf/arbscan).
+
 ## Porting to another device
 Copy `profiles/TEMPLATE.conf`, fill it from your `lpdump` output (group name, partition list, sizes), supply your firmware + super images + any fix-packs. Most OnePlus/OPPO VAB devices have a usable `_b` group; if `lptools create` reports no space, your `_b` group is collapsed and you must resize it / rebuild `super` with `lpmake` first (whole-super reflash — back up first).
 
