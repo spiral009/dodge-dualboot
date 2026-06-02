@@ -10,7 +10,7 @@
 
 - This modifies firmware and the `super` partition. **Mistakes can hard-brick a slot or the whole device.**
 - **Golden rule:** all operations target the **secondary slot only** (the one you do NOT daily-drive). Never write a `*_a` partition while AviumUI lives on `_a`. The scripts enforce this; if you go manual, *you* enforce it.
-- **Anti-rollback (ARB) is the brick risk.** Flashing ColorOS firmware whose ARB index is *higher* than your daily slot's firmware permanently raises a hardware fuse and will **brick your daily OS** (it can no longer boot). See §A1 and Appendix A.
+- **Anti-rollback (ARB) is the brick risk.** ARB is a **single device-wide fuse, not per-slot** — anything you ever flash to `_b` raises it for `_a` too. Flashing ColorOS firmware whose ARB index is *higher* than your current fuse raises it irreversibly and will **brick your daily OS** (it can no longer boot). Our dodge baseline = **0** (measured via `arbscan`, not assumed). See §A1 and Appendix A.
 - **Your data is plaintext (DFE).** `ro.crypto.state=unsupported`; `/data` and `/sdcard` are not encrypted. This is why recovery edits work and why a slot mistake never costs files — but it is also *less* secure; that is an accepted trade-off here.
 - **Ultimate recovery (un-brick):** OnePlus 13 supports **MSM Download Tool / EDL (9008)**. A full MSM restore returns the device to 100% stock (both slots, all firmware) and **erases everything**. Keep the MSM package + a working USB-C cable + a Windows machine (or a VM) available. This is the floor under every step below.
 - Nothing proprietary (ColorOS images/firmware) is included in this repo. You supply your own from official sources.
@@ -22,6 +22,18 @@
 | Editing files in `coloros_data.img` (the loopback) | safe (it's just ColorOS's `/data`) |
 | `dd` to `*_b` blocks / `lptools` on `*_b` while on `_a` | medium — wrong image bricks `_b` only, `_a` survives |
 | `dd` to `*_a` / writing whole `super` / wrong ARB firmware | **HIGH — can brick your daily OS / device** |
+
+### 0b. STATUS — proven on dodge vs not (read before trusting this)
+**PROVEN (actually running on the device):**
+- ColorOS `_b` **boots and runs** with `/data` = the `coloros_data.img` loopback; `my_stock` bind-mounts; WiFi (peach) works; SIM 1/calls work. The loopback-`/data` design is **not** theoretical here — it's the live setup.
+- DFE/plaintext `/data`; the shared-TEE lock recovery (`aviumui_fix.sh`) — used successfully.
+- ARB indices **measured with `arbscan`**: device + OOS.402 + COS.403 = index **0**; COS.703 = **1** (advances at 16.0.3.50x). Verified, not assumed.
+
+**NOT YET PROVEN (experimental):**
+- `cos2b.sh` / §A3 doing the `super` carve **on-device with `lptools`**. The original `_b` install used a **super-rebuild** route, not an on-device carve. On a **Virtual A/B** device the inactive `_b` group is often COW/zero-sized, so `lptools create … _b` may have no space → fall back to a PC `lpmake` super rebuild. **Dry-run + `lpdump` first.**
+- Exact `lptools` verb set varies by OrangeFox build.
+
+**REAL ESCAPE HATCH:** a full **MSM/EDL stock restore** (or fastboot flashall of full stock firmware for your *exact* model), prepared on a PC **before** you start. The PART B partition-removal steps are convenience, **not** your safety net.
 
 ---
 
@@ -181,6 +193,9 @@ All in OrangeFox, root, **booted on `_a`** (target = `_b`). `D=/sdcard/dualbootk
 
 Goal: remove ColorOS from `_b`, free `super` + the 64 GB image, **without touching `_a`**.
 Do this **booted on `_a`** or in OrangeFox (NOT booted on `_b`).
+
+> ⚠️ The reliable full reset is an **MSM/EDL stock restore** — the steps below are the *surgical* reclaim, a convenience, **not** your safety net.
+> ⚠️ Do **NOT** `dd /dev/zero` over `boot_b` / `vendor_boot_b` as "cleanup" (a popular but dangerous suggestion): one wrong `by-name` path kills your daily slot and it buys you nothing. Leaving stale `_b` boot images is harmless if you don't boot `_b`.
 
 1. **Remove the `_b` logical partitions** (frees `super` space):
    ```sh

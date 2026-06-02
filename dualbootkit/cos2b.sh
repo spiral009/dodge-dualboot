@@ -57,7 +57,7 @@ if [ -z "$TARGET_SLOT" ]; then [ "$ACTIVE" = "_a" ] && TARGET_SLOT="_b" || TARGE
 [ "$TARGET_SLOT" != "$ACTIVE" ] || die "target ($TARGET_SLOT) == active/daily slot. Refusing to overwrite your running OS."
 GRP="${SECONDARY_GROUP}${TARGET_SLOT}"
 ok "active/daily slot = $ACTIVE   ->  installing to TARGET = $TARGET_SLOT (group $GRP)"
-ok "your daily slot ($ACTIVE) will NOT be touched"
+ok "this run targets ONLY $TARGET_SLOT (guarded against the active slot) - keep a Slot-A backup regardless"
 [ -d "$FW_DIR" ]   || die "firmware dir missing: $FW_DIR  (run tools/get-coloros.sh first)"
 [ -d "$SUPER_DIR" ]|| die "super images dir missing: $SUPER_DIR"
 
