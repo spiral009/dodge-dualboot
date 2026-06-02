@@ -30,7 +30,7 @@
 - ARB indices **measured with `arbscan`**: device + OOS.402 + COS.403 = index **0**; COS.703 = **1** (advances at 16.0.3.50x). Verified, not assumed.
 
 **NOT YET PROVEN (experimental):**
-- `cos2b.sh` / §A3 doing the `super` carve **on-device with `lptools`**. The original `_b` install used a **super-rebuild** route, not an on-device carve. On a **Virtual A/B** device the inactive `_b` group is often COW/zero-sized, so `lptools create … _b` may have no space → fall back to a PC `lpmake` super rebuild. **Dry-run + `lpdump` first.**
+- `cos2b.sh` / §A3 doing the `super` carve **on-device with `lptools`**. ⚠️ **Correction (verified against AOSP):** the OnePlus 13 is **Virtual A/B**, which means there is **no real `_b` dynamic-partition group in `super` at all** — the "B side" is COW snapshots, and *B slots are no longer in super*. So you **cannot** just `lptools create system_b` into an empty `_b` group: it does not exist yet. The **mandatory foundation** is a **PC `lpmake` super rebuild** that creates real `_a` + `_b` groups ("make the VAB device act like it has two physical slots" — this is what the SuperHybrid route did). On-device `lptools` carving only applies *after* super has been rebuilt that way. **Dry-run + `lpdump` first; if there is no `oneplus_dynamic_partitions_b` group with space, you need the rebuild, not the carve.**
 - Exact `lptools` verb set varies by OrangeFox build.
 
 **REAL ESCAPE HATCH:** a full **MSM/EDL stock restore** (or fastboot flashall of full stock firmware for your *exact* model), prepared on a PC **before** you start. The PART B partition-removal steps are convenience, **not** your safety net.
@@ -255,10 +255,13 @@ Use **MSM/EDL** to restore full stock, then start over. This is why §0 says kee
 
 ---
 
-## Appendix A — ARB facts (dodge)
-- ColorOS/OxygenOS **≤ 16.0.2.403 = ARB index 0** (safe baseline). OOS 16.0.2.402 and the device's shipped firmware are also ARB 0.
-- ARB **advances at 16.0.3.50x** — flashing those raises the fuse; afterwards lower-ARB firmware (incl. AviumUI's boot chain) may refuse to boot → brick.
+## Appendix A — ARB facts (dodge) + why staying ARB-safe = your right to repair
+- ColorOS/OxygenOS **≤ 16.0.2.403 = ARB index 0** (safe baseline, *measured* with `arbscan`). OOS 16.0.2.402 and the shipped firmware are also ARB 0.
+- ARB **advances at 16.0.3.50x** — flashing those raises the **device-wide fuse** (not per-slot); afterwards any lower-ARB firmware (incl. AviumUI's boot chain) refuses to boot → brick.
 - Verify any image with `python3 dualbootkit/tools/arbscan.py <xbl_or_firmware.img>`.
+
+**Why this matters beyond "don't brick today":** ColorOS **16.0.3.501** introduced a **hardware-level anti-rollback that irreversibly blows fuses**, permanently blocking downgrades *and* custom ROMs ([Consumer Rights Wiki](https://consumerrights.wiki/w/Oneplus_phone_update_introduces_hardware_anti-rollback)). OnePlus has also **blocked MsmDownloadTool** on newer devices and **signs its EDL firehose loaders**, so once the fuse is blown you lose the free, at-home **MSM/EDL self-restore** that is your real un-brick safety net ([XDA — EDL exploit](https://www.xda-developers.com/exploit-qualcomm-edl-xiaomi-oneplus-nokia/), [bkerler/edl](https://github.com/bkerler/edl)).
+**Therefore the project's rule:** **stay on ARB-0 firmware (`≤ 16.0.2.403`) on this device, forever.** That single discipline keeps (a) free EDL/MSM restore at home, (b) the ability to flash custom ROMs, and (c) the dual-boot itself working. Accepting one `16.0.3.50x+` OTA permanently forfeits all three. The `arbscan` gate in `get-coloros.sh`/`cos2b.sh` exists to enforce exactly this.
 
 ## Appendix B — dodge logical partitions (typical)
 `_a` and `_b` groups (`oneplus_dynamic_partitions_{a,b}`) each may contain: `system, system_ext, product, vendor, odm, vendor_dlkm, odm_dlkm, system_dlkm`. Confirm yours with `lpdump`. ColorOS `_b` here uses the minimal set: `system_b, system_ext_b, product_b, vendor_b, odm_b`.

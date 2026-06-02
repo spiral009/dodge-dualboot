@@ -6,6 +6,9 @@ Run a full custom AOSP ROM (**AviumUI**) on slot **`_a`** as your daily driver *
 
 > 📖 **Full step-by-step manual (build / drop / restore ColorOS, with every command + warning): [`docs/GUIDE.md`](docs/GUIDE.md).** Written to be picked up cold by a future operator or an AI assistant. Start there if you want the boring complete version.
 
+### ⚠️ Stay on ARB-safe firmware — it's your right to repair
+ColorOS **16.0.3.501** added **hardware anti-rollback that irreversibly blows fuses**, permanently blocking downgrades, custom ROMs, *and* the free at-home **MSM/EDL un-brick** (OnePlus also blocked MsmDownloadTool and signs its EDL loaders) — [Consumer Rights Wiki](https://consumerrights.wiki/w/Oneplus_phone_update_introduces_hardware_anti-rollback). **On dodge, stay on `≤ 16.0.2.403` (ARB index 0, measured).** One `16.0.3.50x+` OTA permanently forfeits free self-restore + ROM freedom + this dual-boot. Every ARB gate in this repo exists to enforce that one rule. *(Note: the OnePlus 13 is Virtual A/B — there is no real `_b` group in `super` until you rebuild it; see [`docs/GUIDE.md`](docs/GUIDE.md) §0b.)*
+
 ### Prior art (what's new here)
 A/B-slot dual-boot is a known *concept* ([XDA](https://xdaforums.com/t/concept-using-a-b-slots-for-dual-rom-boot.3853200/)); the perennial blocker is the **shared `/data`** (Zackptg5's OnePlus 7 method split userdata via a custom TWRP). [DualBootPatcher](https://github.com/chenxiaolong/DualBootPatcher) (dead since Android 9) and MultiROM installed a 2nd ROM into an image; Google's [DSU](https://developer.android.com/topic/dsu) runs a *temporary* GSI from a userdata image. This project combines those ideas into something not previously documented end-to-end: **persistent stock ColorOS in the spare `_b` slot, with its `/data` + bulk in a loopback so `super` stays tiny, on-device updates, and a fix for the shared-TEE lock collision.**
 
