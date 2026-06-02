@@ -84,7 +84,7 @@ Switch OS: **OFOX → Reboot → Slot A / Slot B → System.**
 4. **Your own ColorOS** full OTA for dodge (official OPPO/OnePlus source). **Version ≤ 16.0.2.403** (ARB 0). See §A1.
 5. **OxygenOS `peach` WiFi board-data** (incl. `bdwlan.b0i`) from an OxygenOS `/odm/etc/wifi/peach/` for dodge (for §A3 step 6).
 6. A PC with `payload-dumper-go`, `python3`, and (if your OTA is `.ozip`) `ozipdecrypt`.
-7. ⚠️ **MSM/EDL package ready** as the un-brick floor.
+7. ⚠️ **Un-brick kit downloaded NOW** as the floor: the **OPLUS EDL Tool**, your model's **OFP** stock firmware, and a working **SM8750 firehose** — **not** MsmDownloadTool (unsupported on OP13). Plus a Windows PC with Qualcomm 9008 drivers.
 
 ---
 
@@ -260,8 +260,8 @@ Use the **OPLUS EDL Tool** (9008/Firehose, OFP firmware, SM8750 `New_Chimera` lo
 - ARB **advances at 16.0.3.50x** — flashing those raises the **device-wide fuse** (not per-slot); afterwards any lower-ARB firmware (incl. AviumUI's boot chain) refuses to boot → brick.
 - Verify any image with `python3 dualbootkit/tools/arbscan.py <xbl_or_firmware.img>`.
 
-**Why this matters beyond "don't brick today":** ColorOS **16.0.3.501** introduced a **hardware-level anti-rollback that irreversibly blows fuses**, permanently blocking downgrades *and* custom ROMs ([Consumer Rights Wiki](https://consumerrights.wiki/w/Oneplus_phone_update_introduces_hardware_anti-rollback)). OnePlus has also **blocked MsmDownloadTool** on newer devices and **signs its EDL firehose loaders**, so once the fuse is blown you lose the free, at-home **MSM/EDL self-restore** that is your real un-brick safety net ([XDA — EDL exploit](https://www.xda-developers.com/exploit-qualcomm-edl-xiaomi-oneplus-nokia/), [bkerler/edl](https://github.com/bkerler/edl)).
-**Therefore the project's rule:** **stay on ARB-0 firmware (`≤ 16.0.2.403`) on this device, forever.** That single discipline keeps (a) free EDL/MSM restore at home, (b) the ability to flash custom ROMs, and (c) the dual-boot itself working. Accepting one `16.0.3.50x+` OTA permanently forfeits all three. The `arbscan` gate in `get-coloros.sh`/`cos2b.sh` exists to enforce exactly this.
+**Why this matters beyond "don't brick today":** ColorOS **16.0.3.501** introduced a **hardware-level anti-rollback that irreversibly blows fuses**, permanently blocking downgrades *and* custom ROMs ([Consumer Rights Wiki](https://consumerrights.wiki/w/Oneplus_phone_update_introduces_hardware_anti-rollback)). MsmDownloadTool no longer supports the OP13 (it stops ~OP9); the only free at-home un-brick is the **OPLUS EDL Tool**, which still needs an **OEM-signed firehose** (and for OP13 a possibly-paid auth key) — all of which a **blown fuse defeats** ([XDA — EDL exploit](https://www.xda-developers.com/exploit-qualcomm-edl-xiaomi-oneplus-nokia/), [bkerler/edl](https://github.com/bkerler/edl)).
+**Therefore the project's rule:** **stay on ARB-0 firmware (`≤ 16.0.2.403`) on this device, forever.** That single discipline keeps (a) free EDL restore at home (OPLUS EDL Tool), (b) the ability to flash custom ROMs, and (c) the dual-boot itself working. Accepting one `16.0.3.50x+` OTA permanently forfeits all three. The `arbscan` gate in `get-coloros.sh`/`cos2b.sh` exists to enforce exactly this.
 
 ## Appendix B — dodge logical partitions (typical)
 `_a` and `_b` groups (`oneplus_dynamic_partitions_{a,b}`) each may contain: `system, system_ext, product, vendor, odm, vendor_dlkm, odm_dlkm, system_dlkm`. Confirm yours with `lpdump`. ColorOS `_b` here uses the minimal set: `system_b, system_ext_b, product_b, vendor_b, odm_b`.
