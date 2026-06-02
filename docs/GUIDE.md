@@ -12,7 +12,7 @@
 - **Golden rule:** all operations target the **secondary slot only** (the one you do NOT daily-drive). Never write a `*_a` partition while AviumUI lives on `_a`. The scripts enforce this; if you go manual, *you* enforce it.
 - **Anti-rollback (ARB) is the brick risk.** ARB is a **single device-wide fuse, not per-slot** — anything you ever flash to `_b` raises it for `_a` too. Flashing ColorOS firmware whose ARB index is *higher* than your current fuse raises it irreversibly and will **brick your daily OS** (it can no longer boot). Our dodge baseline = **0** (measured via `arbscan`, not assumed). See §A1 and Appendix A.
 - **Your data is plaintext (DFE).** `ro.crypto.state=unsupported`; `/data` and `/sdcard` are not encrypted. This is why recovery edits work and why a slot mistake never costs files — but it is also *less* secure; that is an accepted trade-off here.
-- **Ultimate recovery (un-brick):** OnePlus 13 supports **MSM Download Tool / EDL (9008)**. A full MSM restore returns the device to 100% stock (both slots, all firmware) and **erases everything**. Keep the MSM package + a working USB-C cable + a Windows machine (or a VM) available. This is the floor under every step below.
+- **Ultimate recovery (un-brick):** ⚠️ **MSM Download Tool does NOT support the OnePlus 13** (MSM stops around the OP9 era). The OP13 tool is the **[OPLUS EDL Tool](https://droidwin.com/how-to-unbrick-oneplus-oppo-realme-via-oplus-edl-tool/)** (free, by kr_white — [salokrwhite/OplusEdlTool](https://github.com/salokrwhite/OplusEdlTool)): Qualcomm **9008 / Firehose**, handles encrypted **OFP/OPS** firmware, OP13 = **SM8750** firehose (`OPPO_SM8750_New_Chimera*.melf`). **But it is NOT a guaranteed free rescue on OP13:** firehose loaders must be OEM-signed, old leaked ones are patched, the auth key can be paid/limited, and **once the ARB fuse is blown it cannot flash older firmware.** So your real floor is: **(1) stay ARB-0, (2) keep your own full stock firmware (OFP) + a working SM8750 firehose downloaded NOW, while you still can**, + a Windows PC with Qualcomm 9008 drivers.
 - Nothing proprietary (ColorOS images/firmware) is included in this repo. You supply your own from official sources.
 
 ### What is safe vs dangerous
@@ -33,7 +33,7 @@
 - `cos2b.sh` / §A3 doing the `super` carve **on-device with `lptools`**. ⚠️ **Correction (verified against AOSP):** the OnePlus 13 is **Virtual A/B**, which means there is **no real `_b` dynamic-partition group in `super` at all** — the "B side" is COW snapshots, and *B slots are no longer in super*. So you **cannot** just `lptools create system_b` into an empty `_b` group: it does not exist yet. The **mandatory foundation** is a **PC `lpmake` super rebuild** that creates real `_a` + `_b` groups ("make the VAB device act like it has two physical slots" — this is what the SuperHybrid route did). On-device `lptools` carving only applies *after* super has been rebuilt that way. **Dry-run + `lpdump` first; if there is no `oneplus_dynamic_partitions_b` group with space, you need the rebuild, not the carve.**
 - Exact `lptools` verb set varies by OrangeFox build.
 
-**REAL ESCAPE HATCH:** a full **MSM/EDL stock restore** (or fastboot flashall of full stock firmware for your *exact* model), prepared on a PC **before** you start. The PART B partition-removal steps are convenience, **not** your safety net.
+**REAL ESCAPE HATCH:** the **OPLUS EDL Tool** (NOT MSM — MSM doesn't support OP13) with **your own OFP firmware + a working SM8750 firehose, downloaded in advance**, plus staying ARB-0. The PART B partition-removal steps are convenience, **not** your safety net.
 
 ---
 
@@ -194,7 +194,7 @@ All in OrangeFox, root, **booted on `_a`** (target = `_b`). `D=/sdcard/dualbootk
 Goal: remove ColorOS from `_b`, free `super` + the 64 GB image, **without touching `_a`**.
 Do this **booted on `_a`** or in OrangeFox (NOT booted on `_b`).
 
-> ⚠️ The reliable full reset is an **MSM/EDL stock restore** — the steps below are the *surgical* reclaim, a convenience, **not** your safety net.
+> ⚠️ The reliable full reset is an EDL stock restore with the **OPLUS EDL Tool** (not MSM — MSM doesn't support OP13) — the steps below are the *surgical* reclaim, a convenience, **not** your safety net.
 > ⚠️ Do **NOT** `dd /dev/zero` over `boot_b` / `vendor_boot_b` as "cleanup" (a popular but dangerous suggestion): one wrong `by-name` path kills your daily slot and it buys you nothing. Leaving stale `_b` boot images is harmless if you don't boot `_b`.
 
 1. **Remove the `_b` logical partitions** (frees `super` space):
@@ -251,7 +251,7 @@ Likely wrong/incomplete firmware or super carve, or ARB mismatch. Restore `_b` b
 Use `scripts/update/update-aviumui-a.sh` — it flashes `_a` boot blocks + `lptools`-updates only `*_a` logical partitions inside `super`. ⚠️ Never flash a whole `super.img` for an update — that wipes `_b`.
 
 ### D5. Total brick / nothing boots
-Use **MSM/EDL** to restore full stock, then start over. This is why §0 says keep MSM ready.
+Use the **OPLUS EDL Tool** (9008/Firehose, OFP firmware, SM8750 `New_Chimera` loader) to restore full stock, then start over — **MSM Download Tool will not work on OP13.** This only works if the ARB fuse hasn't been advanced past your firmware and you have a working signed firehose; this is why §0 says download your OFP + firehose **now** and stay ARB-0.
 
 ---
 
